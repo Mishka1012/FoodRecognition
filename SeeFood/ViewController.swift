@@ -34,6 +34,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         imageView.image = userPickedImage
         imagePicker.dismiss(animated: true, completion: nil)
     }
+    //MARK: - UI Actions
     //camera action
     @IBAction func cameraTapped(_ sender: UIBarButtonItem) {
         present(imagePicker, animated: true, completion: nil)
