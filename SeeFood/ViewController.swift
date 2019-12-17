@@ -25,6 +25,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         imagePicker.allowsEditing = false
     }
     func detect(image: CIImage) {
+        outPutLabel.text = ""
         //vision ml model
         guard let model = try? VNCoreMLModel(for: Inceptionv3().model) else {
             fatalError("Loading core ml model failed.")
@@ -34,23 +35,31 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
             guard let results = request.results as? [VNClassificationObservation] else {
                 fatalError("Error downcasting results")
             }
-            let maxGuesses = 5
-            var text = "Top \(maxGuesses) guesses about this image\n"
+            let maxGuesses = 4
+            var text = "Top \(maxGuesses) guesses about this image:\n"
             var guessNumber = 0
             for result in results {
                 guessNumber += 1
+                if guessNumber == 1 {
+                    self.navigationItem.title = result.identifier
+                }
                 if guessNumber <= maxGuesses {
-                    text += "\(result.identifier) with \(String(format: "%.3f", (result.confidence * 100)))% confidence\n"
+                    text += "\(result.identifier) with \(String(format: "%.2f", (result.confidence * 100)))% confidence\n"
                 } else {
                     break
                 }
             }
             self.outPutLabel.text = text
             //sorting through the top 10 results
-//            guard let result = results.first else {
-//                fatalError("Unable to extract the first result")
-//            }
-//            print(result.identifier)
+            guard let result = results.first else {
+                fatalError("Unable to extract the first result")
+            }
+            if result.identifier.contains("hotdog") {
+                self.navigationItem.title = "HotDog!"
+            } else {
+                self.navigationItem.title = "Not A HotDog!"
+            }
+            print(result.identifier)
         }
         //specify handler
         let handler = VNImageRequestHandler(ciImage: image, options: [:])
@@ -74,7 +83,9 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
         guard let cIImage = CIImage(image: userPickedImage) else {
             fatalError("Unable to convert ui image to ci image")
         }
-        detect(image: cIImage)
+        DispatchQueue.main.async {
+            self.detect(image: cIImage)
+        }
     }
     //MARK: - UI Actions
     //camera action
